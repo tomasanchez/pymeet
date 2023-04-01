@@ -1,0 +1,95 @@
+[tool.poetry]
+name = "pymeet"
+version = "0.1.0"
+description = "An Advanced Software Construction Techniques Assignment"
+authors = ["tomassanchez <tosanchez@frba.utn.edu.ar>"]
+license = "MIT"
+repository = "git@github.com:tomasanchez/pymeet.git"
+readme = "README.md"
+packages = [{ include = "pymeet", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = { version = "~0.95.0", extras = ["all"] }
+sqlalchemy = "~1.4.0"
+uvicorn = { version = "~0.20.0", extras = ["standard"] }
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
+coverage = { extras = ["toml"], version = "*" }
+pytest-cov = "*"
+pre-commit = ">=2.9.3"
+isort = ">=5.0"
+black = "*"
+flake8 = "*"
+flake8-cognitive-complexity = "*"
+pylint = "*"
+mypy = "*"
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.coverage.run]
+branch = true
+omit = ['*/tests*', '*/src/allocation/domain*']
+
+[tool.coverage.report]
+show_missing = true
+ignore_errors = true
+exclude_lines = ["pragma: no cover", "raise NotImplementedError", "if TYPE_CHECKING:", "if __name__ == .__main__.:"]
+
+[tool.isort]
+known_first_party = "allocation"
+line_length = 120
+multi_line_output = 3
+use_parentheses = true
+include_trailing_comma = true
+ensure_newline_before_comments = true
+force_grid_wrap = 0
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.pylint.basic]
+max-line-length = 120
+argument-rgx = "[a-z_][a-z0-9_]{0,30}$"
+function-rgx = "[a-z_][a-z0-9_]*$"
+variable-rgx = "[a-z_][a-z0-9_]{0,30}$"
+good-names = ["logger", "i", "j", "k", "ex", "Run", "T"]
+bad-names = ["l", "I", "O"]
+ignore-patterns = "test_.*?py"
+
+[tool.pylint.logging]
+logging-modules = "logging"
+
+[tool.pylint.messages_control]
+disable = [
+    "fixme",
+    "no-member",
+    "unused-argument",
+    "too-few-public-methods",
+    "duplicate-code",
+    "no-name-in-module",
+    "no-self-argument",
+    "missing-class-docstring",
+]
+
+[tool.pylint.reports]
+reports = false
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = "tests"
+python_files = "test_*.py"
+junit_family = "xunit1"
+log_cli = false
+log_level = "DEBUG"
+adopts = "-p no:logging"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
