@@ -32,7 +32,7 @@ git clone "git@github.com:tomasanchez/pymeet.git"
 
 2. Install the dependencies.
 
-If you dont start in a virtual environment poetry will create one for you.
+If you don't start in a virtual environment poetry will create one for you.
 
 ```bash
 cd pymeet/pymeet-rest && poetry install
