@@ -3,6 +3,36 @@
 """
 import datetime
 
+from pymeet.app.domain.errors import IllegalVoteError
+
+
+class User:
+    """
+    Represents a user.
+
+    Attributes:
+        username (str): The username of the user.
+        email (str): The email of the user.
+        password (str): The password of the user.
+    """
+
+    def __init__(self, username: str, email: str, password: str):
+        self.username = username
+        self.email = email
+        self.password = password
+
+    def __repr__(self) -> str:
+        return f"User({self.username}, {self.email})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, User):
+            return False
+
+        return self.username == other.username
+
+    def __hash__(self):
+        return hash(self.username)
+
 
 class MeetingEventOption:
     """
@@ -11,24 +41,24 @@ class MeetingEventOption:
     Attributes:
         date (datetime.date): A proposal date for the event.
         hour (int): A proposal hour for the event.
-        votes (list[str]): Who votes for this option.
+        votes (list[User]): Who votes for this option.
     """
 
     def __init__(self,
                  date: datetime.date = datetime.date.today(),
                  hour: int = 0,
-                 votes: list[str] | None = None
+                 votes: list[User] | None = None
                  ):
         self.date = date
         self.hour = hour
         self.votes = votes or []
 
-    def vote(self, attendee: str):
+    def vote(self, attendee: User):
         """
         Vote for the option.
 
         Args:
-            attendee (str): The attendee who votes.
+            attendee (User): The attendee who votes.
         """
         self.votes.append(attendee)
 
@@ -58,7 +88,7 @@ class MeetingEvent:
     def __init__(self,
                  name: str,
                  options: list[MeetingEventOption],
-                 attendees: set[str] | None = None,
+                 attendees: set[User] | None = None,
                  voted_date: datetime.datetime | None = None,
                  open_voting: bool = True,
                  ):
@@ -80,15 +110,37 @@ class MeetingEvent:
         most_voted_option: MeetingEventOption = max(self.options, key=lambda option: len(option.votes))
 
         self.voted_date = datetime.datetime.combine(most_voted_option.date, datetime.time(hour=most_voted_option.hour))
-        
+
         return self.voted_date
 
-    def add_attendee(self, attendee: str):
+    def vote(self, voter: User, option: MeetingEventOption):
+        """
+        Vote for an option.
+
+        Args:
+            voter (User): The attendee who votes.
+            option (MeetingEventOption): The option to vote.
+
+        Raises:
+            IllegalVoteError: If the voter is not an attendee of the event or if the voting is closed.
+        """
+        if voter not in self.attendees:
+            raise IllegalVoteError(f"{voter.username} is not an attendee of this event.")
+
+        if not self.open_voting:
+            raise IllegalVoteError("Voting is closed.")
+
+        if option not in self.options:
+            raise IllegalVoteError(f"{option} is not an option for this event.")
+
+        option.vote(voter)
+
+    def add_attendee(self, attendee: User):
         """
         Adds an attendee to the event.
 
         Args:
-            attendee (str): The attendee to add.
+            attendee (User): The attendee to add.
         """
         self.attendees.add(attendee)
 
