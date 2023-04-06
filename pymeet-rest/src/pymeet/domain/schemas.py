@@ -56,4 +56,4 @@ class UserResponse(CamelCaseModel):
     """
     Represents a user.
     """
-    data: BaseUser = Field(title="User", description="User data output without sensible information")
+    data: BaseUser | list[BaseUser] = Field(title="User", description="User data output without sensible information")
