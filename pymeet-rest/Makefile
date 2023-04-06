@@ -4,7 +4,7 @@
 .PHONY: all
 .DEFAULT_GOAL = help
 .NOTPARALLEL: ; # Targets execute serially
-.ONEHELL: ; # Recipes execute in the same shell
+.ONESHELL: ; # Recipes execute in the same shell
 
 
 clean: ## Removes all build and test artifacts

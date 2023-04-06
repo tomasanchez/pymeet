@@ -4,7 +4,10 @@ Test cases for the domain models.
 """
 import datetime
 
-from src.pymeet.app.domain.models import MeetingEvent, MeetingEventOption
+import pytest
+
+from pymeet.app.domain.errors import IllegalVoteError
+from src.pymeet.app.domain.models import MeetingEvent, MeetingEventOption, User
 
 
 class TestMeetingEventDomain:
@@ -37,15 +40,85 @@ class TestMeetingEventDomain:
         # Then
         assert option_b, option_a in event.options
 
+    def test_user_can_vote(self):
+        """
+        Tests a user can vote.
+        """
+        # Given
+        option = MeetingEventOption(date=datetime.date(2021, 1, 1), hour=10)
+
+        user = User(username="Me", email="me@mail", password="a_fake_password")
+
+        event = MeetingEvent(name="Test Event",
+                             options=[option],
+                             attendees={user}
+                             )
+        # When
+        event.vote(voter=user, option=option)
+
+        # Then
+        assert user in option.votes
+
+    def test_user_cannot_vote_if_not_attendee(self):
+        """
+        Tests a user cannot vote if not an attendee.
+        """
+        # Given
+        option = MeetingEventOption(date=datetime.date(2021, 1, 1), hour=10)
+        user = User(username="Me", email="me@mail", password="a_fake_password")
+        event = MeetingEvent(name="Test Event", options=[option])
+
+        # Raises / When
+        with pytest.raises(IllegalVoteError):
+            event.vote(voter=user, option=option)
+
+    def test_user_cannot_vote_if_voting_closed(self):
+        """
+        Tests a user cannot vote if voting is closed.
+        """
+        # Given
+        option = MeetingEventOption(date=datetime.date(2021, 1, 1), hour=10)
+        user = User(username="Me", email="me@mail", password="a_fake_password")
+        event = MeetingEvent(name="Test Event", options=[option], attendees={user})
+
+        event.open_voting = False
+
+        # Raises / When
+        with pytest.raises(IllegalVoteError):
+            event.vote(voter=user, option=option)
+
+    def test_user_cannot_vote_if_option_not_in_event(self):
+        """
+        Tests a user cannot vote if option is not in the event.
+        """
+        # Given
+        option = MeetingEventOption(date=datetime.date(2021, 1, 1), hour=10)
+        invalid_option = MeetingEventOption(date=datetime.date(2021, 1, 2), hour=10)
+        user = User(username="Me", email="me@mail", password="a_fake_password")
+        event = MeetingEvent(name="Test Event", options=[option], attendees={user})
+
+        # Raises / When
+        with pytest.raises(IllegalVoteError):
+            event.vote(voter=user, option=invalid_option)
+
     def test_can_be_closed_with_most_voted_option(self):
         """
         Tests a Meeting Event can be closed with the most voted option.
         """
         # Given
+        user_a = User(username="Me",
+                      email="an@email.com",
+                      password="a_fake_password")
+
+        user_b = User(username="You",
+                      email="another@email.com",
+                      password="a_fake_password")
+
         option_a = MeetingEventOption(date=datetime.date(2021, 1, 1),
                                       hour=10,
-                                      votes=["Me", "You"],
+                                      votes=[user_a, user_b],
                                       )
+
         option_b = MeetingEventOption(date=datetime.date(2021, 1, 2), hour=10)
 
         event = MeetingEvent(name="Test Event",
@@ -65,12 +138,15 @@ class TestMeetingEventDomain:
         Test an attendee can be added.
         """
         # Given
+        user = User(username="Me",
+                    email="an@email.com",
+                    password="a_fake_password")
         event = MeetingEvent(name="Test Event",
                              options=list(),
                              )
-        
+
         # When
-        event.add_attendee("Me")
+        event.add_attendee(user)
 
         # Then
-        assert "Me" in event.attendees
+        assert user in event.attendees
