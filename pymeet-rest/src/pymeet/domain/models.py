@@ -3,7 +3,7 @@
 """
 import datetime
 
-from pymeet.app.domain.errors import IllegalVoteError
+from pymeet.domain.errors import IllegalVoteError
 
 
 class User:

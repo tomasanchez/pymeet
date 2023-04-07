@@ -6,8 +6,8 @@ import datetime
 
 import pytest
 
-from pymeet.app.domain.errors import IllegalVoteError
-from src.pymeet.app.domain.models import MeetingEvent, MeetingEventOption, User
+from pymeet.domain.errors import IllegalVoteError
+from pymeet.domain.models import MeetingEvent, MeetingEventOption, User
 
 
 class TestMeetingEventDomain:
