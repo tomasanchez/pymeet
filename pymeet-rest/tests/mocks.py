@@ -1,27 +1,67 @@
 """
 Mocks for testing.
 """
-from pymeet.domain.models import User
-from src.pymeet.adapters.repository import UserRepository
+
+from src.pymeet.adapters.repository import T, Repository
+from src.pymeet.adapters.repository import UserRepository, MeetingEventRepository
+from src.pymeet.domain.models import User
 
 
-class FakeUserRepository(UserRepository):
+class InMemoryRepository(Repository):
+    """
+    A list in memory repository implementations.
+    """
 
-    def __init__(self, users: list[User] | None = None):
-        self._users = users or []
+    def __init__(self, data: list[T] | None = None):
+        self._data = data or list()
 
-    def find_all(self) -> list[User]:
-        return self._users
+    def find_all(self) -> list[T]:
+        """
+        Finds all entities.
 
-    def find_by(self, **kwargs) -> User | None:
+        Returns:
+            list[T] : A list of entities.
+
+        """
+        return self._data
+
+    def find_by(self, **kwargs) -> T | None:
+        """
+        Finds an entity by its attributes.
+
+        Args:
+            **kwargs: The attributes of an entity.
+
+        Returns:
+            T : An entity if exists, otherwise None.
+
+        """
         properties = kwargs.keys()
-        return next((x for x in self._users if all(getattr(x, p) == kwargs[p] for p in properties)), None)
+        return next((x for x in self._data if all(getattr(x, p) == kwargs[p] for p in properties)), None)
 
-    def save(self, entity: User) -> None:
-        self._users.append(entity)
+    def save(self, entity) -> None:
+        """
+        Saves an entity to the repository.
+
+        Args:
+            entity (T): The entity to save.
+        """
+        self._data.append(entity)
 
     def delete(self, entity) -> None:
-        self._users.remove(entity)
+        """
+        Deletes an entity from the repository.
+
+        Args:
+            entity (T): The entity to delete.
+        """
+        self._data.remove(entity)
+
+
+class FakeUserRepository(UserRepository, InMemoryRepository):
+
+    def __init__(self, users: list[User] | None = None):
+        super().__init__(data=users)
 
     def find_by_username(self, username: str) -> User | None:
         return self.find_by(username=username)
@@ -35,4 +75,8 @@ class FakeUserRepository(UserRepository):
             password: The user's password.
             email: The user's email.
         """
-        self._users.append(User(username=username, password=password, email=email))
+        self._data.append(User(username=username, password=password, email=email))
+
+
+class FakeMeetingRepository(MeetingEventRepository, InMemoryRepository):
+    pass
