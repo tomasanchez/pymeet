@@ -2,8 +2,9 @@
     This module contains the domain objects and errors used by pymeet.
 """
 import datetime
+import uuid
 
-from pymeet.domain.errors import IllegalVoteError
+from pymeet.domain.errors import IllegalVoteException, IllegalUserException
 
 
 class User:
@@ -49,6 +50,7 @@ class MeetingEventOption:
                  hour: int = 0,
                  votes: list[User] | None = None
                  ):
+        self.id = str(uuid.uuid4())
         self.date = date
         self.hour = hour
         self.votes = votes or []
@@ -98,6 +100,21 @@ class MeetingEvent:
         self.voted_date = voted_date
         self.open_voting = open_voting
 
+    def toggle_voting(self, user: str, voting: bool | None = None):
+        """
+        Toggles the voting status of the event.
+
+        Args:
+            user (str): The user who toggles the voting.
+            voting (Optional[bool]): The new status of the voting. Defaults to None.
+        """
+        owner = list(self.attendees)[0]
+
+        if owner.username is not user:
+            raise IllegalUserException("Only the owner of the event can toggle the voting.")
+
+        self.open_voting = voting if voting is not None else not self.open_voting
+
     def close_voting(self) -> datetime.datetime:
         """
         Sets the most voted option as the final date for the event.
@@ -125,13 +142,13 @@ class MeetingEvent:
             IllegalVoteError: If the voter is not an attendee of the event or if the voting is closed.
         """
         if voter not in self.attendees:
-            raise IllegalVoteError(f"{voter.username} is not an attendee of this event.")
+            raise IllegalVoteException(f"{voter.username} is not an attendee of this event.")
 
         if not self.open_voting:
-            raise IllegalVoteError("Voting is closed.")
+            raise IllegalVoteException("Voting is closed.")
 
         if option not in self.options:
-            raise IllegalVoteError(f"{option} is not an option for this event.")
+            raise IllegalVoteException(f"{option} is not an option for this event.")
 
         option.vote(voter)
 

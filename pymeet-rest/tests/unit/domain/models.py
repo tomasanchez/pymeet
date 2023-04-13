@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 
-from pymeet.domain.errors import IllegalVoteError
+from pymeet.domain.errors import IllegalVoteException
 from pymeet.domain.models import MeetingEvent, MeetingEventOption, User
 
 
@@ -69,7 +69,7 @@ class TestMeetingEventDomain:
         event = MeetingEvent(name="Test Event", options=[option])
 
         # Raises / When
-        with pytest.raises(IllegalVoteError):
+        with pytest.raises(IllegalVoteException):
             event.vote(voter=user, option=option)
 
     def test_user_cannot_vote_if_voting_closed(self):
@@ -84,7 +84,7 @@ class TestMeetingEventDomain:
         event.open_voting = False
 
         # Raises / When
-        with pytest.raises(IllegalVoteError):
+        with pytest.raises(IllegalVoteException):
             event.vote(voter=user, option=option)
 
     def test_user_cannot_vote_if_option_not_in_event(self):
@@ -98,7 +98,7 @@ class TestMeetingEventDomain:
         event = MeetingEvent(name="Test Event", options=[option], attendees={user})
 
         # Raises / When
-        with pytest.raises(IllegalVoteError):
+        with pytest.raises(IllegalVoteException):
             event.vote(voter=user, option=invalid_option)
 
     def test_can_be_closed_with_most_voted_option(self):

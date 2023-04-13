@@ -4,8 +4,15 @@ Domain Errors definitions.
 """
 
 
-class IllegalVoteError(Exception):
+class IllegalVoteException(Exception):
     """
     Illegal Meeting Option Vote Error.
+    """
+    pass
+
+
+class IllegalUserException(Exception):
+    """
+    Illegal User Error.
     """
     pass
