@@ -95,55 +95,68 @@ class UserRepository(Repository, ABC):
         raise NotImplementedError
 
 
-class ListUserRepository(UserRepository):
+class MeetingEventRepository(Repository, abc.ABC):
     """
-    A list user repository implementations.
+    Abstract base class for meeting event repository implementations.
+    """
+    pass
+
+
+class ListRepository(Repository):
+    """
+    A list repository implementations.
     """
 
     def __init__(self):
-        self._users = []
+        self._data = []
 
-    def find_all(self) -> list[User]:
+    def find_all(self) -> list[T]:
         """
-        Finds all users.
+        Finds all entities.
 
         Returns:
-            list[User] : A list of users.
+            list[T] : A list of entities.
 
         """
-        return self._users
+        return self._data
 
-    def find_by(self, **kwargs) -> User | None:
+    def find_by(self, **kwargs) -> T | None:
         """
-        Finds a user by its attributes.
+        Finds an entity by its attributes.
 
         Args:
-            **kwargs: The attributes of a user.
+            **kwargs: The attributes of an entity.
 
         Returns:
-            User : A user if exists, otherwise None.
+            T : An entity if exists, otherwise None.
 
         """
         properties = kwargs.keys()
-        return next((x for x in self._users if all(getattr(x, p) == kwargs[p] for p in properties)), None)
+        return next((x for x in self._data if all(getattr(x, p) == kwargs[p] for p in properties)), None)
 
-    def save(self, user: User) -> None:
+    def save(self, entity) -> None:
         """
-        Saves a user to the repository.
-
-        Args:
-            user (User): The user to save.
-        """
-        self._users.append(user)
-
-    def delete(self, user: User) -> None:
-        """
-        Deletes a user from the repository.
+        Saves an entity to the repository.
 
         Args:
-            user (User): The user to delete.
+            entity (T): The entity to save.
         """
-        self._users.remove(user)
+        self._data.append(entity)
+
+    def delete(self, entity) -> None:
+        """
+        Deletes an entity from the repository.
+
+        Args:
+            entity (T): The entity to delete.
+        """
+        self._data.remove(entity)
+
+
+class ListUserRepository(UserRepository, ListRepository):
+    """
+    A list user repository implementations.
+    """
 
     def find_by_username(self, username: str) -> User | None:
         """
@@ -157,3 +170,10 @@ class ListUserRepository(UserRepository):
 
         """
         return self.find_by(username=username)
+
+
+class ListMeetingEventRepository(MeetingEventRepository, ListRepository):
+    """
+    A list meeting event repository implementations.
+    """
+    pass
